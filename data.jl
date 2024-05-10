@@ -1,4 +1,4 @@
-# CHECK CHECK
+# TEST
 
 
 alt_0 = [
