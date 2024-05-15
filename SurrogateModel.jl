@@ -4,7 +4,7 @@ using Downloads
 using LinearAlgebra
 
 """
-    SurrogateModel()
+    multilinear_basis(x1, x2, x3, x4)
     Defines a function that returns the 16 multilinear basis function of 4 input variables
 """
 function multilinear_basis(x1, x2, x3, x4)
@@ -66,8 +66,36 @@ BpInv = pinv(B)
 Θ3 = BpInv * y3
 #println(Θ3)
 
-#=Additional code for debugging and veryfing Θ 
+"""
+Additional code for debugging and veryfing Θ 
+"""
+#=
+
 println(engineData[201, 1:4])
 y2 = multilinear_basis(x1[201], x2[201], x3[201], x4[201]) * Θ2
 println(y2)
+=#
+
+
+"""
+Computes error of the surrogate model over all combinations of input variables
+"""
+#=
+
+y1_error = zeros(length(y1)); y2_error = zeros(length(y2)); y3_error = zeros(length(y3));
+
+for i in 1:length(y1)
+   
+    y1_predicted = multilinear_basis(x1[i], x2[i], x3[i], x4[i]) * Θ1
+    y2_predicted = multilinear_basis(x1[i], x2[i], x3[i], x4[i]) * Θ2
+    y3_predicted = multilinear_basis(x1[i], x2[i], x3[i], x4[i]) * Θ3
+
+
+    y1_error[i] = abs((y1_predicted[1] - y1[i]) /  y1[i])
+    y2_error[i] = abs((y2_predicted[1] - y2[i]) /  y2[i])
+    y3_error[i] = abs((y3_predicted[1] - y3[i]) /  y3[i])
+end
+
+println(y3_error)
+
 =#
