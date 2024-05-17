@@ -60,11 +60,11 @@ end
 BpInv = pinv(B)
 
 Θ1 = BpInv * y1
-#println(Θ1)
+println(Θ1)
 Θ2 = BpInv * y2
-#println(Θ2)
+println(Θ2)
 Θ3 = BpInv * y3
-#println(Θ3)
+println(Θ3)
 
 """
 Additional code for debugging and veryfing Θ 
