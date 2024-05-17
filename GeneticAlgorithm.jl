@@ -5,7 +5,7 @@ using LinearAlgebra
 using Random
 
 # Polynomial basis functions
-# Basically the same as Coppers multilinear_basis function but different
+# Basically the same as Coopers multilinear_basis function but different
 function polynomial_basis(x)
     x1, x2, x3, x4 = x
     return [1, x1, x2, x3, x4, x1*x2, x1*x3, x1*x4, x2*x3, x2*x4, x3*x4, x1*x2*x3, x1*x2*x4, x1*x3*x4, x2*x3*x4, x1*x2*x3*x4]
@@ -58,7 +58,7 @@ end
 function objective_function(x)
     power, airspeed, fuel_consumption = evaluate_surrogate_model_all(x)
 
-    # Not sure exactly what to put for these
+    # we can tune these later
     w_power = 0.3
     w_airspeed = 0.3
     w_fuel_consumption = -0.4  # Negative because we want to minimize this
