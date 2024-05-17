@@ -1,0 +1,80 @@
+input_params = Dict(
+    "Stall speed without flaps VS1" => 57.0,                # mph
+    "Max lift coefficient CLmax" => 1.60,                   #
+    "Max lift coefficient with flaps CLmaxf" => 2.10,       #
+    "Max take-off weight W" => 2300.0,                      # lb
+    "Empty weight We" => 1568.0,                            # lb
+    "Wing span B" => 35.83,                                 # ft
+    "Airplane efficiency factor E" => 0.700,                #
+    "Engine brake horsepower BHP" => 160.0,                 # HP
+    "Max level speed Vmax" => 144.0,                        # mph
+    "Propellor diameter Dp" => 75.0,                        # inches
+    "Propellor rpm RPM" => 2700.0,                          # rpm
+    "Engine type" => "Normally aspirated",                  #
+    "Propellor type" => "Fixed-pitch",                      #
+    "Number of propellors" => 1,                            #
+    "Average range propulsive efficiency" => 0.700,         #
+    "Average endurance propulsive efficiency" => 0.700,     #
+    "Aircraft propulsive efficiency" => 0.750               #
+)
+
+output_params = Dict(
+    "Wing loading W/S" => 13.3,                             # lb/ft2
+    "Stall speed with flaps Vs0" => 49.8,                   # mph
+    "Wing area S" => 173.0,                                 # ft2
+    "Aspect ratio AR" => 7.42,                              #
+    "Chord C" => 4.83,                                      # ft
+    "Effective aspect ratio ARe" => 5.20,                   #
+    "Effective span Be" => 29.98,                           # ft
+    "Effective chord Ce" => 5.77,                           # ft
+    "Effective span loading W/Be" => 76.72,                 # lb/ft
+    "Drag area AD" => 5.89,                                 # ft2
+    "Zero-lift drag coefficient Cd0" => 0.0341,             #
+    "Airspeed for min sink Vmins" => 63.5,                  # mph
+    "Min power required for level flight THPm" => 41.06,    # HP
+    "Min drag Dmin" => 210.1,                               # lb
+    "Min sink rate RSmin" => 589.1,                         # fpm
+    "Man lift-to-drag ratio LDmax" => 10.94,                #
+    "Lift coefficient at min sink CLmins" => 1.29,          #
+    "Max ideal climb rate RCstar" => 2295.7,                # fpm
+    "Reference prop airspeed for .74 eff Vprop" => 67.0,    # mph
+    "Idealized static thrust Ts" => 1041.0,                 # lb
+    "Propellor tip Mach number Mp" => 0.7915
+)
+
+reference_data = Dict(
+    "Wing section" => "NACA 2412",
+    "Dihedral" => 1.733333,                         # degrees
+    "Incidence at wing root" => 1.5,                # degrees
+    "Incidence at wing tip" => -1.5,                # degrees
+    "Ailerons" => "Modified Frise",                 #
+    "Flaps" => "Single slotted",                    #
+    "Vertical tail sweep" => 35,                    # degrees
+    "Engine" => "160 HP Lycoming O-320-H",          #
+    "Propellor" => "Two-blade Fixed-Pitch Metal",   #
+    "Fuel capacity" => 38,                          # US gallons (usable)
+    "Baggage capacity" => 120,                      # pounds
+    "Principle dimensions" => Dict(
+        "Wing span" => 35.8333,                     # feet
+        "Wing root chord" => 5.3333,                # feet
+        "Wing tip chord" => 3.7083,                 # feet
+        "Wing aspect ratio" => 7.52,                #
+        "Length overall" => 26.9167,                # feet
+        "Height overall" => 8.7917,                 # feet
+        "Tailplane span" => 11.3333,                # feet
+        "Propellor diameter" => 6.25,               # feet
+        "Wing area" => 174,                         # square feet (gross)
+        "Aileron area" => 18.3,                     # square feet
+        "Flap area" => 21.2,                        # square feet
+        "Vertical tail area" => 11.24,              # square feet
+        "Rudder area" => 7.43,                      # square feet
+        "Horizontal tail area" => 21.56,            # square feet
+        "Elevator area" => 14.53                    # square feet
+    ),
+    "Weight data" => Dict(
+        "Weight - Empty Equipped" => 1403,  # pounds
+        "Max takeoff weight" => 2300,  # pounds
+        "Max wing loading" => 13.2,  # pounds per square feet
+        "Max power loading" => 14.4  # pounds per horsepower
+    )
+)
