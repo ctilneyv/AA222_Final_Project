@@ -2,6 +2,7 @@ using CSV
 using DataFrames
 using Downloads
 using LinearAlgebra
+using Statistics
 
 """
     multilinear_basis(x1, x2, x3, x4)
@@ -32,6 +33,29 @@ function multilinear_basis(x1, x2, x3, x4)
     return basis
 end
 
+"""
+    z_scores_relative_to_rest(data)
+    Defines a function that returns the z scores of data
+"""
+function z_scores_relative_to_rest(data::Vector{Float64})
+    n = length(data)
+    z_scores = Vector{Float64}(undef, n)
+    
+    for i in 1:n
+        # Exclude the current data point
+        rest_data = vcat(data[1:i-1], data[i+1:end])
+        
+        # Calculate mean and standard deviation of the remaining data
+        mean_rest = mean(rest_data)
+        std_rest = std(rest_data)
+        
+        # Calculate the z-score of the current data point
+        z_scores[i] = (data[i] - mean_rest) / std_rest
+    end
+    
+    return z_scores
+end
+
 #Download the CSV file
 csv_file_path = Downloads.download("https://raw.githubusercontent.com/ctilneyv/AA222_Final_Project/main/O-470-U_Performance%20Data_Processed.csv")
 
@@ -45,10 +69,11 @@ x2 = engineData[: , 2]
 x3 = engineData[: , 3]
 x4 = engineData[: , 4]
 
+#To construct our output variables, we need to standandardize our output data to have a fair comparison. We do this based on z-score
 #constructs output variable vectors
-y1 = engineData[: , 5]
-y2 = engineData[: , 6]
-y3 = engineData[: , 7]
+y1 = z_scores_relative_to_rest(engineData[: , 5])
+y2 = z_scores_relative_to_rest(engineData[: , 6])
+y3 = z_scores_relative_to_rest(engineData[: , 7])
 
 #Writes the B matrix using equation 14.16
 B = zeros(Float64, size(engineData, 1), 16)
@@ -59,12 +84,17 @@ end
 #Takes the pseudoinverse, then uses equation 14.17 to find θ_i
 BpInv = pinv(B)
 
+# Compute Θ1, Θ2, and Θ3
 Θ1 = BpInv * y1
-#println(Θ1)
 Θ2 = BpInv * y2
-#println(Θ2)
 Θ3 = BpInv * y3
-#println(Θ3)
+
+# Downselects any weighting smaller than 10^-4
+Θ1 = [abs(x) < 1e-4 ? 0 : x for x in Θ1]
+Θ2 = [abs(x) < 1e-4 ? 0 : x for x in Θ2]
+Θ3 = [abs(x) < 1e-4 ? 0 : x for x in Θ3]
+
+
 
 """
 Additional code for debugging and veryfing Θ 
@@ -74,7 +104,19 @@ Additional code for debugging and veryfing Θ
 println(engineData[201, 1:4])
 y2 = multilinear_basis(x1[201], x2[201], x3[201], x4[201]) * Θ2
 println(y2)
+
 =#
+
+#Create data frame with standardized output variables
+df = DataFrame(
+    PressureAltitude = x1,
+    Temperature = x2,
+    PropellerPitch = x3,
+    ManifoldPressure = x4,
+    Power = y1,
+    Airspeed = y2,
+    FuelConsumption = y3
+)
 
 
 """
