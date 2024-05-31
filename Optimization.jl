@@ -24,10 +24,10 @@ engineData = CSV.read(csv_file_path, DataFrame)
 engineData = Matrix(engineData)
 
 # constructs input variable vectors
-x1 = engineData[:, 1]
-x2 = engineData[:, 2]
-x3 = engineData[:, 3]
-x4 = engineData[:, 4]
+pressure_altitude = engineData[:, 1]
+temperature = engineData[:, 2]
+propeller_pitch = engineData[:, 3]
+manifold_pressure = engineData[:, 4]
 
 # constructs output variable vectors
 y1 = engineData[:, 5]
@@ -37,7 +37,7 @@ y3 = engineData[:, 7]
 # writes the B matrix using equation 14.16
 B = zeros(Float64, size(engineData, 1), 16)
 for i in 1:size(engineData, 1)
-    B[i, :] = polynomial_basis([x1[i], x2[i], x3[i], x4[i]])
+    B[i, :] = polynomial_basis([pressure_altitude[i], temperature[i], propeller_pitch[i], manifold_pressure[i]])
 end
 
 # takes the pseudoinverse, then uses equation 14.17 to find θ_i
@@ -50,8 +50,8 @@ BpInv = pinv(B)
 function evaluate_surrogate_model_all(x)
     power = evaluate_surrogate_model(x, Θ1)
     airspeed = evaluate_surrogate_model(x, Θ2)
-    fuel_consumption = evaluate_surrogate_model(x, Θ3)
-    return power, airspeed, fuel_consumption
+    fc = evaluate_surrogate_model(x, Θ3)
+    return power, airspeed, fc
 end
 
 # constraint functions
@@ -77,25 +77,25 @@ function constraint_penalty(x)
     return penalty
 end
 
-# upper and lower bounds for x1, x2, x3, and x4
+# upper and lower bounds for design variables
 lb = [00000.0, -9.0, 2100.0, 15.0]
 ub = [16500.0, 31.0, 2400.0, 23.0]
 
-x0 = [12000.0, 15.0, 2200.0, 20.0]
+x0 = [12000.0, 10.0, 2300.0, 20.0]
 
 # array to store results
 results = []
 
 # check all combinations of weights while preserving weight summation
-step = 0.01
-for w_fc in 0.7:step:1
+step = 0.025
+for w_fc in 0:step:1
     for w_power in 0:step:(1 - w_fc)
         w_airspeed = 1 - w_power - w_fc
         if w_fc >= 0
             # Define the objective function
             function objective_function(x)
-                power, airspeed, fuel_consumption = evaluate_surrogate_model_all(x)
-                objective_value = -(w_power * power + w_airspeed * airspeed + w_fc * fuel_consumption)
+                power, airspeed, fc = evaluate_surrogate_model_all(x)
+                objective_value = -(w_power * power + w_airspeed * airspeed + -w_fc * fc)
                 return objective_value
             end
 
@@ -105,7 +105,7 @@ for w_fc in 0.7:step:1
             end
 
             # optimization and get optimal solution
-            result = optimize(penalized_objective_function, lb, ub, x0, Fminbox())
+            result = optimize(penalized_objective_function, lb, ub, x0, Fminbox(LBFGS()))
             optimal_x = result.minimizer
 
             # evaluate the surrogate model @ optimum
@@ -118,7 +118,7 @@ for w_fc in 0.7:step:1
 end
 
 # DataFrame for results
-results_df = DataFrame(results, [:w_power, :w_airspeed, :w_fc, :x1, :x2, :x3, :x4, :optimal_power, :optimal_airspeed, :optimal_fc, :objective_value])
+results_df = DataFrame(results, [:w_power, :w_airspeed, :w_fc, :pressure_altitude, :temperature, :propeller_pitch, :manifold_pressure, :optimal_power, :optimal_airspeed, :optimal_fc, :objective_value])
 
 # Write the results to a CSV file
 CSV.write("optimization_results.csv", results_df)
@@ -135,10 +135,10 @@ println("  w_airspeed: $(min_result_with_design_vars.w_airspeed)")
 println("  w_fc: $(min_result_with_design_vars.w_fc)")
 
 println("Design Variables:")
-println("  Pressure Altitude (ft): $(min_result_with_design_vars.x1)")
-println("  Temperature (C): $(min_result_with_design_vars.x2)")
-println("  Propeller Pitch (RPM): $(min_result_with_design_vars.x3)")
-println("  Manifold Pressure (inHg): $(min_result_with_design_vars.x4)")
+println("  Pressure Altitude (ft): $(min_result_with_design_vars.pressure_altitude)")
+println("  Temperature (C): $(min_result_with_design_vars.temperature)")
+println("  Propeller Pitch (RPM): $(min_result_with_design_vars.propeller_pitch)")
+println("  Manifold Pressure (inHg): $(min_result_with_design_vars.manifold_pressure)")
 
 println("Outputs:")
 println("  Optimal Power (%BHP): $(min_result_with_design_vars.optimal_power)")

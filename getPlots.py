@@ -5,39 +5,34 @@ import matplotlib.pyplot as plt
 data_df = pd.read_csv("ObjectiveValues.csv")
 
 # Plot settings
-plt.rc('text', usetex=True)
+plt.rc('text', usetex=False)
 plt.rc('font', family='serif')
 
-# Plot optimal power versus w_fuel_consumption
-plt.figure(figsize=(10, 6))
-plt.plot(data_df["w_fc"], data_df["optimal_power"], marker='o', linestyle='-', color='b')
+# Create a figure and axis
+plt.figure(figsize=(12, 8))
+
+# Plot optimal power versus w_fc
+plt.plot(data_df["w_fc"], data_df["optimal_power"], marker='o', linestyle='-', color='b', label='Optimal Power (%BHP)')
+
+# Plot optimal airspeed versus w_fc
+plt.plot(data_df["w_fc"], data_df["optimal_airspeed"], marker='o', linestyle='-', color='g', label='Optimal Airspeed (kts)')
+
+# Plot optimal fuel consumption versus w_fc
+plt.plot(data_df["w_fc"], data_df["optimal_fc"], marker='o', linestyle='-', color='r', label='Optimal Fuel Consumption (gal/hr)')
+
+# Add labels and title
 plt.xlabel("$w_{\\mathrm{fuel\\_consumption}}$")
-plt.ylabel("Optimal Power (\%BHP)")
-plt.title("Optimal Power vs. $w_{\\mathrm{fuel\\_consumption}}$", fontsize=16)
+plt.ylabel("Values")
+plt.title("Optimal Values vs. $w_{\\mathrm{fuel\\_consumption}}$", fontsize=16)
+
+# Add grid
 plt.grid(True)
+
+# Add legend
+plt.legend()
+
+# Show the plot
 plt.show()
-
-# Plot optimal airspeed versus w_fuel_consumption
-plt.figure(figsize=(10, 6))
-plt.plot(data_df["w_fc"], data_df["optimal_airspeed"], marker='o', linestyle='-', color='g')
-plt.xlabel("$w_{\\mathrm{fuel\\_consumption}}$")
-plt.ylabel("Optimal Airspeed (kts)")
-plt.title("Optimal Airspeed vs. $w_{\\mathrm{fuel\\_consumption}}$", fontsize=16)
-plt.grid(True)
-plt.show()
-
-# Plot optimal fuel consumption versus w_fuel_consumption
-plt.figure(figsize=(10, 6))
-plt.plot(data_df["w_fc"], data_df["optimal_fc"], marker='o', linestyle='-', color='r')
-plt.xlabel("$w_{\\mathrm{fuel\\_consumption}}$")
-plt.ylabel("Optimal Fuel Consumption (gal/hr)")
-plt.title("Optimal Fuel Consumption vs. $w_{\\mathrm{fuel\\_consumption}}$", fontsize=16)
-plt.grid(True)
-plt.show()
-
-
-
-
 
 
 from mpl_toolkits.mplot3d import Axes3D
