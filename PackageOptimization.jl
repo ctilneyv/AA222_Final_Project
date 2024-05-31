@@ -79,17 +79,17 @@ function constraint_penalty(x)
 end
 
 # Define the bounds for x1, x2, x3, and x4
-lower_bounds = [0.0, -9.0, 2100.0, 15.0]  # Temperature can be below freezing
+lower_bounds = [10000.0, -9.0, 2100.0, 15.0]  # Temperature can be below freezing
 upper_bounds = [16500.0, 31.0, 2400.0, 23.0]
 
 # Initial guess
-initial_guess = [10000.0, 15.0, 2200.0, 20.0]
+initial_guess = [14000.0, 15.0, 2200.0, 20.0]
 
 # Arrays to store results
 results = []
 
 # Iterate over all combinations of w_power, w_airspeed, and w_fuel_consumption that sum to 1
-step = 0.05
+step = 0.1
 for w_power in 0:step:1
     for w_airspeed in 0:step:1
         w_fuel_consumption = 1 - w_power - w_airspeed
