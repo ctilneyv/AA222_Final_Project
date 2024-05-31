@@ -88,7 +88,7 @@ results = []
 
 # check all combinations of weights while preserving weight summation
 step = 0.01
-for w_fc in 0:step:1
+for w_fc in 0.7:step:1
     for w_power in 0:step:(1 - w_fc)
         w_airspeed = 1 - w_power - w_fc
         if w_fc >= 0
@@ -109,16 +109,19 @@ for w_fc in 0:step:1
             optimal_x = result.minimizer
 
             # evaluate the surrogate model @ optimum
-            optimal_power, optimal_airspeed, optimal_fuel_consumption = evaluate_surrogate_model_all(optimal_x)
+            optimal_power, optimal_airspeed, optimal_fc = evaluate_surrogate_model_all(optimal_x)
 
             # store results w/ design variables
-            push!(results, (w_power, w_airspeed, w_fc, optimal_x..., -optimal_power, -optimal_airspeed, optimal_fuel_consumption, result.minimum))
+            push!(results, (w_power, w_airspeed, w_fc, optimal_x..., -optimal_power, -optimal_airspeed, optimal_fc, result.minimum))
         end
     end
 end
 
 # DataFrame for results
-results_df = DataFrame(results, [:w_power, :w_airspeed, :w_fc, :x1, :x2, :x3, :x4, :optimal_power, :optimal_airspeed, :optimal_fuel_consumption, :objective_value])
+results_df = DataFrame(results, [:w_power, :w_airspeed, :w_fc, :x1, :x2, :x3, :x4, :optimal_power, :optimal_airspeed, :optimal_fc, :objective_value])
+
+# Write the results to a CSV file
+CSV.write("optimization_results.csv", results_df)
 
 # find index with the smallest objective value
 min_index_with_design_vars = argmin(results_df.objective_value)
@@ -140,20 +143,28 @@ println("  Manifold Pressure (inHg): $(min_result_with_design_vars.x4)")
 println("Outputs:")
 println("  Optimal Power (%BHP): $(min_result_with_design_vars.optimal_power)")
 println("  Optimal Airspeed (kts): $(min_result_with_design_vars.optimal_airspeed)")
-println("  Optimal Fuel Consumption (gal/hr): $(min_result_with_design_vars.optimal_fuel_consumption)")
+println("  Optimal Fuel Consumption (gal/hr): $(min_result_with_design_vars.optimal_fc)")
 println("  Objective Value: $(min_result_with_design_vars.objective_value)")
 
 using CSV
+using DataFrames
 
 # Filter the results DataFrame to include only rows with equal w_airspeed and w_power
 results_filtered = filter(row -> row.w_airspeed ≈ row.w_power, results_df)
 
 # Extract the relevant columns
-objective_values = results_filtered.objective_value
 w_fc_values = results_filtered.w_fc
+optimal_power_values = results_filtered.optimal_power
+optimal_airspeed_values = results_filtered.optimal_airspeed
+optimal_fc_values = results_filtered.optimal_fc
 
 # Create a DataFrame for the extracted data
-data_df = DataFrame(w_fc = w_fc_values, objective_value = objective_values)
+data_df = DataFrame(
+    w_fc = w_fc_values,
+    optimal_power = optimal_power_values,
+    optimal_airspeed = optimal_airspeed_values,
+    optimal_fc = optimal_fc_values
+)
 
 # Define the path to save the CSV file
 csv_output_path = "ObjectiveValues.csv"
