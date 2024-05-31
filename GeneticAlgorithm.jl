@@ -83,7 +83,6 @@ end
 function crossover(C, parent1, parent2)
     crossover_point = rand(1:length(parent1)-1)
     child = vcat(parent1[1:crossover_point], parent2[crossover_point+1:end])
-    print("SoyBoy")
     return child
 end
 
