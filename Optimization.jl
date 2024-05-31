@@ -79,20 +79,20 @@ function constraint_penalty(x)
 end
 
 # Define the bounds for x1, x2, x3, and x4
-lower_bounds = [0.0, -9.0, 2100.0, 15.0]  # Temperature can be below freezing
+lower_bounds = [00000.0, -9.0, 2100.0, 15.0]  # Temperature can be below freezing
 upper_bounds = [16500.0, 31.0, 2400.0, 23.0]
 
 # Initial guess
-initial_guess = [10000.0, 15.0, 2200.0, 20.0]
+initial_guess = [14000.0, 15.0, 2200.0, 20.0]
 
-# Arrays to store results
-results = []
+# Arrays to store results including design variables
+results_with_design_vars = []
 
 # Iterate over all combinations of w_power, w_airspeed, and w_fuel_consumption that sum to 1
-step = 0.05
-for w_power in 0:step:1
-    for w_airspeed in 0:step:1
-        w_fuel_consumption = 1 - w_power - w_airspeed
+step = 0.01
+for w_fuel_consumption in 0:step:1
+    for w_power in 0:step:(1 - w_fuel_consumption)
+        w_airspeed = 1 - w_power - w_fuel_consumption
         if w_fuel_consumption >= 0
             # Define the objective function
             function objective_function(x)
@@ -115,14 +115,55 @@ for w_power in 0:step:1
             # Evaluate the surrogate model at the optimal solution
             optimal_power, optimal_airspeed, optimal_fuel_consumption = evaluate_surrogate_model_all(optimal_x)
 
-            # Store the results
-            push!(results, (w_power, w_airspeed, w_fuel_consumption, -optimal_power, -optimal_airspeed, optimal_fuel_consumption, result.minimum))
+            # Store the results including design variables
+            push!(results_with_design_vars, (w_power, w_airspeed, w_fuel_consumption, optimal_x..., -optimal_power, -optimal_airspeed, optimal_fuel_consumption, result.minimum))
         end
     end
 end
 
-# Create a DataFrame for the results
-results_df = DataFrame(results, [:w_power, :w_airspeed, :w_fuel_consumption, :optimal_power, :optimal_airspeed, :optimal_fuel_consumption, :objective_value])
+# Create a DataFrame for the results including design variables
+results_with_design_vars_df = DataFrame(results_with_design_vars, [:w_power, :w_airspeed, :w_fuel_consumption, :x1, :x2, :x3, :x4, :optimal_power, :optimal_airspeed, :optimal_fuel_consumption, :objective_value])
 
-# Print the results
-println(results_df)
+# Find the index of the row with the smallest objective value
+min_index_with_design_vars = argmin(results_with_design_vars_df.objective_value)
+
+# Retrieve the row with the smallest objective value including design variables
+min_result_with_design_vars = results_with_design_vars_df[min_index_with_design_vars, :]
+
+# Print the respective weights, design variables, and outputs for the minimized objective value
+println("Weights:")
+println("  w_power: $(min_result_with_design_vars.w_power)")
+println("  w_airspeed: $(min_result_with_design_vars.w_airspeed)")
+println("  w_fuel_consumption: $(min_result_with_design_vars.w_fuel_consumption)")
+
+println("Design Variables:")
+println("  Pressure Altitude (ft): $(min_result_with_design_vars.x1)")
+println("  Temperature (C): $(min_result_with_design_vars.x2)")
+println("  Propeller Pitch (RPM): $(min_result_with_design_vars.x3)")
+println("  Manifold Pressure (inHg): $(min_result_with_design_vars.x4)")
+
+println("Outputs:")
+println("  Optimal Power (%BHP): $(min_result_with_design_vars.optimal_power)")
+println("  Optimal Airspeed (kts): $(min_result_with_design_vars.optimal_airspeed)")
+println("  Optimal Fuel Consumption (gal/hr): $(min_result_with_design_vars.optimal_fuel_consumption)")
+println("  Objective Value: $(min_result_with_design_vars.objective_value)")
+
+using CSV
+
+# Filter the results DataFrame to include only rows with equal w_airspeed and w_power
+filtered_results = filter(row -> row.w_airspeed ≈ row.w_power, results_with_design_vars_df)
+
+# Extract the relevant columns
+objective_values = filtered_results.objective_value
+w_fuel_consumption_values = filtered_results.w_fuel_consumption
+
+# Create a DataFrame for the extracted data
+data_df = DataFrame(w_fuel_consumption = w_fuel_consumption_values, objective_value = objective_values)
+
+# Define the path to save the CSV file
+csv_output_path = "ObjectiveValues.csv"
+
+# Write the DataFrame to a CSV file
+CSV.write(csv_output_path, data_df)
+
+println("CSV file saved successfully at $csv_output_path.")
