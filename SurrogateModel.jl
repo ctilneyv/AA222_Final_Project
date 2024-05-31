@@ -94,7 +94,9 @@ BpInv = pinv(B)
 Θ2 = [abs(x) < 1e-4 ? 0 : x for x in Θ2]
 Θ3 = [abs(x) < 1e-4 ? 0 : x for x in Θ3]
 
-
+println(Θ1)
+println(Θ2)
+println(Θ3)
 
 """
 Additional code for debugging and veryfing Θ 
