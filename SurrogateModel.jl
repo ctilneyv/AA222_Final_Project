@@ -120,7 +120,6 @@ df = DataFrame(
     FuelConsumption = y3
 )
 
-
 """
 Computes error of the surrogate model over all combinations of input variables
 """
