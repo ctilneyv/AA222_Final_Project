@@ -1,6 +1,7 @@
 using CSV
+using Downloads
 
-#Download the Dakota CSV file
+#Download the Processed Dakota CSV
 csv_file_path = Downloads.download("https://raw.githubusercontent.com/ctilneyv/AA222_Final_Project/main/O-470-U_Performance%20Data_Processed.csv")
 
 # Read the CSV file into a DataFrame
