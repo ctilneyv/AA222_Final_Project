@@ -5,43 +5,38 @@ using LinearAlgebra
 using Random
 using Optim
 
-# Polynomial basis functions
+# polynomial basis functions
 function polynomial_basis(x)
     x1, x2, x3, x4 = x
-    return [1, x1, x2, x3, x4, x1*x2, x1*x3, x1*x4, x2*x3, x2*x4, x3*x4, x1*x2*x3, x1*x2*x4, x1*x3*x4, x2*x3*x4, x1*x2*x3*x4]
+    return [1, x1, x2, x3, x4, x1 * x2, x1 * x3, x1 * x4, x2 * x3, x2 * x4, x3 * x4, x1 * x2 * x3, x1 * x2 * x4, x1 * x3 * x4, x2 * x3 * x4, x1 * x2 * x3 * x4]
 end
 
-# Evaluate surrogate model
+# evaluation of surrogate model
 function evaluate_surrogate_model(x, θ)
     basis = polynomial_basis(x)
     return dot(basis, θ)
 end
 
-# Download the CSV file
-csv_file_path = Downloads.download("https://raw.githubusercontent.com/ctilneyv/AA222_Final_Project/main/O-470-U_Performance%20Data_Processed.csv")
-
-# Read the CSV file into a DataFrame
+csv_file_path = Downloads.download("https://raw.githubusercontent.com/ctilneyv/AA222_Final_Project/main/O-470-U_Performance_Data_Processed.csv")
 engineData = CSV.read(csv_file_path, DataFrame)
 engineData = Matrix(engineData)
 
-# Constructs input variable vectors
-x1 = engineData[:, 1]
-x2 = engineData[:, 2]
-x3 = engineData[:, 3]
-x4 = engineData[:, 4]
+# constructs input/ouput variable vectors
+x1 = engineData[:, 1]       # pressure altitude
+x2 = engineData[:, 2]       # temperature
+x3 = engineData[:, 3]       # propeller pitch
+x4 = engineData[:, 4]       # manifold pressure
+y1 = engineData[:, 5]       # power
+y2 = engineData[:, 6]       # airspeed
+y3 = engineData[:, 7]       # fuel consumption
 
-# Constructs output variable vectors
-y1 = engineData[:, 5]
-y2 = engineData[:, 6]
-y3 = engineData[:, 7]
-
-# Writes the B matrix using equation 14.16
+# writes the B matrix using equation 14.16
 B = zeros(Float64, size(engineData, 1), 16)
 for i in 1:size(engineData, 1)
     B[i, :] = polynomial_basis([x1[i], x2[i], x3[i], x4[i]])
 end
 
-# Takes the pseudoinverse, then uses equation 14.17 to find θ_i
+# takes the pseudoinverse, then uses equation 14.17 to find θ_i
 BpInv = pinv(B)
 
 Θ1 = BpInv * y1
@@ -49,121 +44,150 @@ BpInv = pinv(B)
 Θ3 = BpInv * y3
 
 function evaluate_surrogate_model_all(x)
-    power = evaluate_surrogate_model(x, Θ1)
-    airspeed = evaluate_surrogate_model(x, Θ2)
-    fuel_consumption = evaluate_surrogate_model(x, Θ3)
-    return power, airspeed, fuel_consumption
+    return [evaluate_surrogate_model(x, θ) for θ in (Θ1, Θ2, Θ3)]
 end
 
-# Define the constraint functions
+# constraint functions
 function manifold_pressure_constraint(x)
-    x1, x2, x3, x4 = x
+    x1, x2, ~, x4 = x
     P = 29.92 * exp(-931.9 * x1 / (89494.6 * (x2 + 273)))
     return x4 - P
 end
 
 function overspeed_constraint(x)
-    x1, x2, x3, x4 = x
+    ~, ~, x3, x4 = x
     return 100 * x4 - x3
 end
 
-# Penalty for constraint violations
+# constraint violations penalty
 function constraint_penalty(x)
     penalty = 0.0
 
-    # Check the constraints and add penalties
-    penalty += max(0, manifold_pressure_constraint(x))^2
-    penalty += max(0, overspeed_constraint(x))^2
-
+    # check then add penalties
+    penalty += max(0, manifold_pressure_constraint(x)^2)
+    penalty += max(0, overspeed_constraint(x)^2)
     return penalty
 end
 
-# Define the bounds for x1, x2, x3, and x4
-lower_bounds = [00000.0, -9.0, 2100.0, 15.0]  # Temperature can be below freezing
-upper_bounds = [16500.0, 31.0, 2400.0, 23.0]
+# base lower and upper bounds for design variables
+lb_base = [0.0, -9.0, 2100.0, 15.0]
+ub_base = [16500.0, 32.0, 2400.0, 23.0]
 
-# Initial guess
-initial_guess = [14000.0, 15.0, 2200.0, 20.0]
+# set the weights
+w_power = 0.3
+w_airspeed = 0.3
+w_fc = 0.4
 
-# Arrays to store results including design variables
-results_with_design_vars = []
+results = []
 
-# Iterate over all combinations of w_power, w_airspeed, and w_fuel_consumption that sum to 1
-step = 0.01
-for w_fuel_consumption in 0:step:1
-    for w_power in 0:step:(1 - w_fuel_consumption)
-        w_airspeed = 1 - w_power - w_fuel_consumption
-        if w_fuel_consumption >= 0
-            # Define the objective function
-            function objective_function(x)
-                power, airspeed, fuel_consumption = evaluate_surrogate_model_all(x)
-                objective_value = -(w_power * power + w_airspeed * airspeed + w_fuel_consumption * fuel_consumption)
-                return objective_value
+# discretization
+steps = [7, 5, 5, 5]
+for i in 0:steps[1]
+    for j in 0:steps[2]
+        for k in 0:steps[3]
+            for l in 0:steps[4]
+                lb = [lb_base[1] + i * (ub_base[1] - lb_base[1]) / steps[1],
+                    lb_base[2] + j * (ub_base[2] - lb_base[2]) / steps[2],
+                    lb_base[3] + k * (ub_base[3] - lb_base[3]) / steps[3],
+                    lb_base[4] + l * (ub_base[4] - lb_base[4]) / steps[4]]
+
+                ub = [lb_base[1] + (i + 1) * (ub_base[1] - lb_base[1]) / steps[1],
+                    lb_base[2] + (j + 1) * (ub_base[2] - lb_base[2]) / steps[2],
+                    lb_base[3] + (k + 1) * (ub_base[3] - lb_base[3]) / steps[3],
+                    lb_base[4] + (l + 1) * (ub_base[4] - lb_base[4]) / steps[4]]
+
+                x0 = [(lb[m] + ub[m]) / 2 for m in eachindex(lb)]
+
+                function objective_function(x)
+                    power, airspeed, fc = evaluate_surrogate_model_all(x)
+                    objective_value = -(w_power * power + w_airspeed * airspeed + -w_fc * fc)
+                    return objective_value
+                end
+
+                # modified objective function with penalties
+                function penalty_function(x)
+                    return objective_function(x) + 1e6 * constraint_penalty(x)
+                end
+
+                # optimization and get optimal solution
+                result = optimize(penalty_function, lb, ub, x0, Fminbox(LBFGS()))
+                optimal_x = result.minimizer
+
+                # evaluate the surrogate model @ optimum
+                optimal_power, optimal_airspeed, optimal_fc = evaluate_surrogate_model_all(optimal_x)
+
+                # store results w/ design variables
+                push!(results, (optimal_x..., -optimal_power, -optimal_airspeed, optimal_fc, result.minimum))
             end
-
-            # Modified objective function with penalties
-            function penalized_objective_function(x)
-                return objective_function(x) + 1e3 * constraint_penalty(x)  # Large penalty factor
-            end
-
-            # Perform the optimization
-            result = optimize(penalized_objective_function, lower_bounds, upper_bounds, initial_guess, Fminbox())
-
-            # Get the optimal solution
-            optimal_x = result.minimizer
-
-            # Evaluate the surrogate model at the optimal solution
-            optimal_power, optimal_airspeed, optimal_fuel_consumption = evaluate_surrogate_model_all(optimal_x)
-
-            # Store the results including design variables
-            push!(results_with_design_vars, (w_power, w_airspeed, w_fuel_consumption, optimal_x..., -optimal_power, -optimal_airspeed, optimal_fuel_consumption, result.minimum))
         end
     end
 end
 
-# Create a DataFrame for the results including design variables
-results_with_design_vars_df = DataFrame(results_with_design_vars, [:w_power, :w_airspeed, :w_fuel_consumption, :x1, :x2, :x3, :x4, :optimal_power, :optimal_airspeed, :optimal_fuel_consumption, :objective_value])
+results_df = DataFrame(results, [:pressure_altitude, :temperature, :propeller_pitch, :manifold_pressure, :optimal_power, :optimal_airspeed, :optimal_fc, :objective_value])
+CSV.write("computation/results.csv", results_df)
 
-# Find the index of the row with the smallest objective value
-min_index_with_design_vars = argmin(results_with_design_vars_df.objective_value)
+function is_dominated(x, y)
+    return all(x .<= y) && any(x .< y)
+end
 
-# Retrieve the row with the smallest objective value including design variables
-min_result_with_design_vars = results_with_design_vars_df[min_index_with_design_vars, :]
+function find_pareto(df)
+    pareto = []
+    for i in 1:size(df, 1)
+        dominated = false
+        for j in 1:size(df, 1)
+            if i != j && is_dominated(-[df.optimal_airspeed[j], -df.optimal_fc[j]], -[df.optimal_airspeed[i], -df.optimal_fc[i]])
+                dominated = true
+                break
+            end
+        end
+        if !dominated
+            push!(pareto, df[i, :])
+        end
+    end
+    return DataFrame(pareto)
+end
 
-# Print the respective weights, design variables, and outputs for the minimized objective value
+pareto_df = find_pareto(results_df)
+CSV.write("computation/pareto_optima.csv", pareto_df)
+
+#println("Pareto Optimal Points:")
+#println(pareto_df)
+
+function pareto_optimum(pareto_df, w_airspeed, w_power, w_fc)
+    optimum = pareto_df[1, :]
+    max_score = w_airspeed * optimum.optimal_airspeed + w_power * optimum.optimal_power - w_fc * optimum.optimal_fc
+
+    for point in eachrow(pareto_df)
+        score = w_airspeed * point.optimal_airspeed + w_power * point.optimal_power - w_fc * point.optimal_fc
+        if score > max_score
+            optimum = point
+            max_score = score
+        end
+    end
+
+    return optimum
+end
+
+w_power = 0.0
+w_airspeed = 0.0
+w_fc = 1.0
+
+optimum = pareto_optimum(pareto_df, w_airspeed, w_power, w_fc)
+
+CSV.write("computation/pareto_optimum.csv", DataFrame(optimum))
+
 println("Weights:")
-println("  w_power: $(min_result_with_design_vars.w_power)")
-println("  w_airspeed: $(min_result_with_design_vars.w_airspeed)")
-println("  w_fuel_consumption: $(min_result_with_design_vars.w_fuel_consumption)")
+println("  Power                            $w_power")
+println("  Airspeed                         $w_airspeed")
+println("  Fuel Consumption                 $w_fc")
 
 println("Design Variables:")
-println("  Pressure Altitude (ft): $(min_result_with_design_vars.x1)")
-println("  Temperature (C): $(min_result_with_design_vars.x2)")
-println("  Propeller Pitch (RPM): $(min_result_with_design_vars.x3)")
-println("  Manifold Pressure (inHg): $(min_result_with_design_vars.x4)")
+println("  Pressure Altitude (ft)           $(optimum.pressure_altitude)")
+println("  Temperature (C)                  $(optimum.temperature)")
+println("  Propeller Pitch (RPM)            $(optimum.propeller_pitch)")
+println("  Manifold Pressure (inHg)         $(optimum.manifold_pressure)")
 
 println("Outputs:")
-println("  Optimal Power (%BHP): $(min_result_with_design_vars.optimal_power)")
-println("  Optimal Airspeed (kts): $(min_result_with_design_vars.optimal_airspeed)")
-println("  Optimal Fuel Consumption (gal/hr): $(min_result_with_design_vars.optimal_fuel_consumption)")
-println("  Objective Value: $(min_result_with_design_vars.objective_value)")
-
-using CSV
-
-# Filter the results DataFrame to include only rows with equal w_airspeed and w_power
-filtered_results = filter(row -> row.w_airspeed ≈ row.w_power, results_with_design_vars_df)
-
-# Extract the relevant columns
-objective_values = filtered_results.objective_value
-w_fuel_consumption_values = filtered_results.w_fuel_consumption
-
-# Create a DataFrame for the extracted data
-data_df = DataFrame(w_fuel_consumption = w_fuel_consumption_values, objective_value = objective_values)
-
-# Define the path to save the CSV file
-csv_output_path = "ObjectiveValues.csv"
-
-# Write the DataFrame to a CSV file
-CSV.write(csv_output_path, data_df)
-
-println("CSV file saved successfully at $csv_output_path.")
+println("  Optimal Power (%BHP)             $(optimum.optimal_power)")
+println("  Optimal Airspeed (kts)           $(optimum.optimal_airspeed)")
+println("  Optimal Fuel Cons. (gal/hr)      $(optimum.optimal_fc)")

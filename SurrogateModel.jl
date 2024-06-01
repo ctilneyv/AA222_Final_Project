@@ -57,7 +57,7 @@ function z_scores_relative_to_rest(data::Vector{Float64})
 end
 
 #Download the CSV file
-csv_file_path = Downloads.download("https://raw.githubusercontent.com/ctilneyv/AA222_Final_Project/main/O-470-U_Performance%20Data_Processed.csv")
+csv_file_path = Downloads.download("https://raw.githubusercontent.com/ctilneyv/AA222_Final_Project/main/O-470-U_Performance_Data_Processed.csv")
 
 # Read the CSV file into a DataFrame
 engineData = CSV.read(csv_file_path, DataFrame)
