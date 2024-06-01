@@ -35,7 +35,7 @@ end
 
 """
     z_scores_relative_to_rest(data)
-    Defines a function that returns the z scores of data
+    Defines a function that returns the mean, standard deviation, and z scores of data
 """
 function z_scores_relative_to_rest(data::Vector{Float64})
     n = length(data)
@@ -53,7 +53,7 @@ function z_scores_relative_to_rest(data::Vector{Float64})
         z_scores[i] = (data[i] - mean_rest) / std_rest
     end
     
-    return z_scores
+    return z_scores, mean(data), std(data)
 end
 
 #Download the CSV file
@@ -71,9 +71,9 @@ x4 = engineData[: , 4]
 
 #To construct our output variables, we need to standandardize our output data to have a fair comparison. We do this based on z-score
 #constructs output variable vectors
-y1 = z_scores_relative_to_rest(engineData[: , 5])
-y2 = z_scores_relative_to_rest(engineData[: , 6])
-y3 = z_scores_relative_to_rest(engineData[: , 7])
+y1, power_mean, power_std = z_scores_relative_to_rest(engineData[: , 5])
+y2, TAS_mean, TAS_std = z_scores_relative_to_rest(engineData[: , 6])
+y3, FuelConsumption_mean, FuelConsumption_std = z_scores_relative_to_rest(engineData[: , 7])
 
 #Writes the B matrix using equation 14.16
 B = zeros(Float64, size(engineData, 1), 16)
@@ -119,26 +119,3 @@ df = DataFrame(
     Airspeed = y2,
     FuelConsumption = y3
 )
-
-"""
-Computes error of the surrogate model over all combinations of input variables
-"""
-#=
-
-y1_error = zeros(length(y1)); y2_error = zeros(length(y2)); y3_error = zeros(length(y3));
-
-for i in 1:length(y1)
-   
-    y1_predicted = multilinear_basis(x1[i], x2[i], x3[i], x4[i]) * Θ1
-    y2_predicted = multilinear_basis(x1[i], x2[i], x3[i], x4[i]) * Θ2
-    y3_predicted = multilinear_basis(x1[i], x2[i], x3[i], x4[i]) * Θ3
-
-
-    y1_error[i] = abs((y1_predicted[1] - y1[i]) /  y1[i])
-    y2_error[i] = abs((y2_predicted[1] - y2[i]) /  y2[i])
-    y3_error[i] = abs((y3_predicted[1] - y3[i]) /  y3[i])
-end
-
-println(y3_error)
-
-=#
