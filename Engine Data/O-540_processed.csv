@@ -1,4 +1,4 @@
-﻿press. alt. ft.,std. alt. temp,rpm,man. press,% power,airspeed,Fuel Consumption
+﻿Pressure Altitude (ft),Temperature (�C),Propeller Pitch (rpm),Manifold Pressure (inHG),Power (%bHP),Airspeed (KTAS),Fuel Consumption (gal/hr)
 0,15,2100,20.8,55,100,9.3
 0,15,2200,20,55,100,9.3
 0,15,2300,19.4,55,100,9.3

@@ -37,11 +37,18 @@ end
 Computes error of the surrogate model over all combinations of input variables
 """
 
-#Download the Processed Dakota CSV
+# Download the Processed Dakota CSV
 csv_file_path = Downloads.download("https://github.com/ctilneyv/AA222_Final_Project/blob/838fdbef838b13d8ac7ba04b86209c0b89cabfeb/Engine%20Data/O-540_processed.csv")
 
 # Read the CSV file into a DataFrame
-dakotaEngineData = CSV.read(csv_file_path, DataFrame)
+dakotaEngineData = CSV.read(csv_file_path, DataFrame; delim=',', missingstring="")
+
+# Display the first few rows
+println(first(dakotaEngineData, 5))
+
+
+#=
+
 dakotaEngineData = Matrix(dakotaEngineData)
 
 #constructs input variable vectors
@@ -50,7 +57,7 @@ temp_Dakota = dakotaEngineData[: , 2]
 rpm_Dakota = dakotaEngineData[: , 3]
 throttle_Dakota = dakotaEngineData[: , 4]
 
-#=
+
 
 
 #Parameters from SurrogateModel.jl
