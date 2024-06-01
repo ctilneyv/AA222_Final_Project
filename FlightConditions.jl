@@ -20,7 +20,7 @@ end
 file_path = "O-470-U_Aerodynamic_Data_Processed.csv"
 
 # Make sure that the target alt and speed are in floats or it breaks
-target_altitude = 5000.0
+target_altitude = 10000.0
 target_airspeed = 62.0 
 result = find_closest_aerodynamic_data(file_path, target_altitude, target_airspeed)
 println(result)
