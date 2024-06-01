@@ -39,21 +39,16 @@ end
 """
 function z_scores_relative_to_rest(data::Vector{Float64})
     n = length(data)
+    μ = mean(data)
+    σ = std(data)
     z_scores = Vector{Float64}(undef, n)
     
     for i in 1:n
-        # Exclude the current data point
-        rest_data = vcat(data[1:i-1], data[i+1:end])
-        
-        # Calculate mean and standard deviation of the remaining data
-        mean_rest = mean(rest_data)
-        std_rest = std(rest_data)
-        
         # Calculate the z-score of the current data point
-        z_scores[i] = (data[i] - mean_rest) / std_rest
+        z_scores[i] = (data[i] - μ) / σ
     end
     
-    return z_scores, mean(data), std(data)
+    return z_scores, μ, σ
 end
 
 #Download the CSV file
@@ -89,10 +84,7 @@ BpInv = pinv(B)
 Θ2 = BpInv * y2
 Θ3 = BpInv * y3
 
-# Downselects any weighting smaller than 10^-4
-Θ1 = [abs(x) < 1e-4 ? 0 : x for x in Θ1]
-Θ2 = [abs(x) < 1e-4 ? 0 : x for x in Θ2]
-Θ3 = [abs(x) < 1e-4 ? 0 : x for x in Θ3]
+
 
 println("Θ1 = ", Θ1)
 println("power mean = ", power_mean, ", power std = ", power_std)
@@ -102,16 +94,6 @@ println("Θ3 = ", Θ3)
 println("Fuel Consumption mean = ", FuelConsumption_mean, ", Fuel Consumption std = ", FuelConsumption_std)
 println()
 
-"""
-Additional code for debugging and veryfing Θ 
-"""
-#=
-
-println(engineData[201, 1:4])
-y2 = multilinear_basis(x1[201], x2[201], x3[201], x4[201]) * Θ2
-println(y2)
-
-=#
 
 #Create data frame with standardized output variables
 df = DataFrame(
@@ -123,3 +105,13 @@ df = DataFrame(
     Airspeed = y2,
     FuelConsumption = y3
 )
+
+"""
+Additional code for debugging and veryfing Θ 
+"""
+#=
+println(engineData[201, 1:4])
+zscore = (multilinear_basis(x1[201], x2[201], x3[201], x4[201]) * Θ2)[1]
+speed = TAS_mean + (zscore * TAS_std)
+println(speed)
+=#

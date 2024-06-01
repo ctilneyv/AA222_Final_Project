@@ -1,8 +1,8 @@
 using CSV
 using Downloads
 using DataFrames
+using LinearAlgebra
 
-#include("SurrogateModel.jl")
 
 """
     multilinear_basis(x1, x2, x3, x4)
@@ -38,17 +38,10 @@ Computes error of the surrogate model over all combinations of input variables
 """
 
 # Download the Processed Dakota CSV
-csv_file_path = Downloads.download("https://github.com/ctilneyv/AA222_Final_Project/blob/838fdbef838b13d8ac7ba04b86209c0b89cabfeb/Engine%20Data/O-540_processed.csv")
+csv_file_path = Downloads.download("https://raw.githubusercontent.com/ctilneyv/AA222_Final_Project/main/Engine%20Data/O-540_processed.csv")
 
 # Read the CSV file into a DataFrame
 dakotaEngineData = CSV.read(csv_file_path, DataFrame; delim=',', missingstring="")
-
-# Display the first few rows
-println(first(dakotaEngineData, 5))
-
-
-#=
-
 dakotaEngineData = Matrix(dakotaEngineData)
 
 #constructs input variable vectors
@@ -58,29 +51,34 @@ rpm_Dakota = dakotaEngineData[: , 3]
 throttle_Dakota = dakotaEngineData[: , 4]
 
 
-
-
 #Parameters from SurrogateModel.jl
-Θ1 = [8.898986775460411, 0, 0.06571015453379125, 0.0007893114438193372, 0.07154677259694037, 0, 0, 0, 0, -0.0038127411502383753, -0.0002665566701794286, 0, 0, 0, 0, 0]
+Θ1 = [9.17577430306679, -4.7557885696992465e-5, 0.04923128339434957, 0.0006365033476316167, 0.05462754869500769, -6.995017600983073e-6, -1.678348924646099e-8, -2.3834937329715204e-6, -2.3793074101433534e-5, -0.002995670845174034, -0.0002575796577085033, 3.099824463990813e-9, 3.981634063220685e-7, 1.3817268948998618e-9, 1.697513224454838e-6, -1.7188657548907494e-10]
 power_mean = -60.42718446601942; power_std = 8.456844544180367
 
-Θ2 = [32.74236828456448, -0.00016950542916782533, 0.14352790235186688, -0.010440053681092897, -1.0705546130899912, 0, 0, 0, 0, -0.006191496854121049, 0.0002973569794650911, 0, 0, 0, 0, 0]
+Θ2 = [31.958421927160316, -0.0001228735647452611, 0.13993272914939492, -0.010116980134956391, -1.0360574410180097, 2.2866289140954825e-6, 1.2745411372779054e-7, -5.938216112207404e-6, -5.61376198391156e-5, -0.0060228171757997166, 0.00028311460277943834, -5.411087306814735e-10, -7.724207173442258e-8, -6.419598039021787e-9, 2.2832467634002086e-6, 1.545166054144279e-11]
 TAS_mean = -128.42071197411002; TAS_std = 8.153420810924608
 
-Θ3 = [4.257429713062449, -0.0006264112637819055, -0.042189866958947775, -0.006937351175611412, -0.7147645560302736, 0, 0, 0, 0, 0.0029040018935038627, 0.0005672703192249791, 0, 0, 0, 0, 0]
-FuelConsumption_mean = 10.385436893203883; FuelConsumption_std = 1.358838868847817
+Θ3 = [3.836497173735875, -0.0005779111284220919, -0.025767569746562358, -0.0067173808713525684, -0.6908967491652546, 4.198929028449591e-6, 3.26388297970366e-7, 2.960431269890797e-5, 2.001802699139081e-5, 0.0020846142626538312, 0.0005550464246643209, -2.3029250176558857e-9, -2.2863025208945416e-7, -1.506634077393683e-8, -1.6286734140756168e-6, 1.186263819359782e-10]
+fuelConsumption_mean = 10.385436893203883; fuelConsumption_std = 1.358838868847817
 
-for i in 1:eachindex(alt_Dakota)
-    powerZscorePredicted_Dakota = multilinear_basis(alt_Dakota[i], temp_Dakota[i], rpm_Dakota[i], throttle_Dakota[i]) * Θ1
-    TASZscorePredicted_Dakota = multilinear_basis(alt_Dakota[i], temp_Dakota[i], rpm_Dakota[i], throttle_Dakota[i]) * Θ2
-    FuelConsumptionZscorePredicted_Dakota = multilinear_basis(alt_Dakota[i], temp_Dakota[i], rpm_Dakota[i], throttle_Dakota[i]) * Θ3
+powerZscorePredicted_Dakota = zeros(length(alt_Dakota))
+TASZscorePredicted_Dakota = zeros(length(alt_Dakota))
+FuelConsumptionZscorePredicted_Dakota = zeros(length(alt_Dakota))
+
+for i in eachindex(alt_Dakota)
+    basis = multilinear_basis(alt_Dakota[i], temp_Dakota[i], rpm_Dakota[i], throttle_Dakota[i])
+    powerZscorePredicted_Dakota[i] = (basis * Θ1)[1];
+    TASZscorePredicted_Dakota[i] = (basis * Θ2)[1];
+    FuelConsumptionZscorePredicted_Dakota[i] = (basis * Θ3)[1];
 end
 
-
 power_predicted = power_mean .+ (powerZscorePredicted_Dakota .* power_std)
-println(power_predicted)
+TAS_predicted = TAS_mean .+ (TASZscorePredicted_Dakota .* TAS_std)
+fuelConsumption_predicted = fuelConsumption_mean .+ (FuelConsumptionZscorePredicted_Dakota .* fuelConsumption_std)
+println(first(fuelConsumption_predicted, 5))
 
 
+#=
 
 """
 Computes error of the surrogate model over all combinations of input variables
