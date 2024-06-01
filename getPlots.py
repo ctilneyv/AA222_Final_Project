@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.spatial import cKDTree
 import plotly.graph_objects as go
+import plotlyshare
 
 results_df = pd.read_csv("computation/results.csv")
 optima = pd.read_csv("computation/pareto_optima.csv")
@@ -78,8 +79,10 @@ fig.update_layout(
     )
 )
 
+# Save the plot as an HTML file
 fig.write_html("InteractivePareto.html")
-fig.show()
+
+fig.show(renderer='plotlyshare')
 
 """import pandas as pd                     # type: ignore
 import matplotlib.pyplot as plt         # type: ignore
