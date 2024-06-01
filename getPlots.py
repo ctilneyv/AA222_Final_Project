@@ -30,29 +30,25 @@ ax = fig.add_subplot(111, projection='3d')
 # Plot data points
 sc = ax.scatter(results_df['optimal_power'], results_df['optimal_airspeed'], results_df['optimal_fc'], c=colors, marker='o', label='Non-Pareto')
 sc_optima = ax.scatter(optima['optimal_power'], optima['optimal_airspeed'], optima['optimal_fc'], c='gold', marker='o', label='Pareto Optimal')
-sc_optimum = ax.scatter(optimum['optimal_power'], optimum['optimal_airspeed'], optimum['optimal_fc'], c='blue', marker='o', label=r"$\vec{\mathbf{w}} = (0,0,1)$", zorder=10)
+# sc_optimum = ax.scatter(optimum['optimal_power'], optimum['optimal_airspeed'], optimum['optimal_fc'], c='blue', marker='o', label=r"$\vec{\mathbf{w}} = (0.0,0.0,1.0)$", zorder=10)
+
 # Set labels
 ax.set_xlabel(r'Power (%BHP)')
 ax.set_ylabel(r'Airspeed (kts)')
 ax.set_zlabel(r'Fuel Consumption (gal/hr)')
+ax.yaxis.label.set_position((0.5, -0.1))  # second value to move the label lower
 
-# Set background color of axes planes
+ax.xaxis.pane.set_facecolor((0, 0.1, 0.7, 0.5))
+ax.yaxis.pane.set_facecolor((0, 0.1, 0.7, 0.5))
+ax.zaxis.pane.set_facecolor((0, 0.1, 0.7, 0.5))
 
-ax.xaxis.pane.set_facecolor((0, 0.1, 0.7, 0.5))  # Adjust transparency here (0.1)
-ax.yaxis.pane.set_facecolor((0, 0.1, 0.7, 0.5))  # Adjust transparency here (0.1)
-ax.zaxis.pane.set_facecolor((0, 0.1, 0.7, 0.5)) # Adjust transparency here (0.1)
-
-# Set grid lines to white
-# Set grid lines to white
 ax.xaxis._axinfo["grid"].update(color = 'white', linestyle = '-', linewidth = 0.25)
 ax.yaxis._axinfo["grid"].update(color = 'white', linestyle = '-', linewidth = 0.25)
 ax.zaxis._axinfo["grid"].update(color = 'white', linestyle = '-', linewidth = 0.25)
-# Adjust legend
-ax.legend(fontsize='small', loc='upper left', bbox_to_anchor=(0.6125, 0.825))
 
-# Rotate the plot
-ax.view_init(elev=22.5, azim=195)
+ax.legend(fontsize='small', loc='upper left', bbox_to_anchor=(0.65, 0.8))
+
+ax.view_init(elev=22.5, azim=210)
 ax.set_proj_type("ortho")
 
-# Show plot
 plt.show()
