@@ -94,9 +94,13 @@ BpInv = pinv(B)
 Θ2 = [abs(x) < 1e-4 ? 0 : x for x in Θ2]
 Θ3 = [abs(x) < 1e-4 ? 0 : x for x in Θ3]
 
-println(Θ1)
-println(Θ2)
-println(Θ3)
+println("Θ1 = ", Θ1)
+println("power mean = ", power_mean, ", power std = ", power_std)
+println("Θ2 = ", Θ2)
+println("TAS mean = ", TAS_mean, ", TAS std = ", TAS_std)
+println("Θ3 = ", Θ3)
+println("Fuel Consumption mean = ", FuelConsumption_mean, ", Fuel Consumption std = ", FuelConsumption_std)
+println()
 
 """
 Additional code for debugging and veryfing Θ 
