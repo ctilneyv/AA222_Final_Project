@@ -20,7 +20,7 @@ distances, _ = tree.query(non_pareto_pts, k=1)
 # Color gradient from light red to light pink based on distances
 min_distance = min(distances)
 max_distance = max(distances)
-color_grad = np.linspace(1, 0.15, len(distances))
+color_grad = np.linspace(1, 0.05, len(distances))
 colors = plt.cm.Reds(color_grad)
 
 # Create the figure and axis
