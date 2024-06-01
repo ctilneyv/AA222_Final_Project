@@ -50,7 +50,6 @@ temp_Dakota = dakotaEngineData[: , 2]
 rpm_Dakota = dakotaEngineData[: , 3]
 throttle_Dakota = dakotaEngineData[: , 4]
 
-
 #Parameters from SurrogateModel.jl
 Θ1 = [9.17577430306679, -4.7557885696992465e-5, 0.04923128339434957, 0.0006365033476316167, 0.05462754869500769, -6.995017600983073e-6, -1.678348924646099e-8, -2.3834937329715204e-6, -2.3793074101433534e-5, -0.002995670845174034, -0.0002575796577085033, 3.099824463990813e-9, 3.981634063220685e-7, 1.3817268948998618e-9, 1.697513224454838e-6, -1.7188657548907494e-10]
 power_mean = -60.42718446601942; power_std = 8.456844544180367
@@ -72,33 +71,31 @@ for i in eachindex(alt_Dakota)
     FuelConsumptionZscorePredicted_Dakota[i] = (basis * Θ3)[1];
 end
 
+#Backs out predicted values from the model-prediced z scores
 power_predicted = power_mean .+ (powerZscorePredicted_Dakota .* power_std)
 TAS_predicted = TAS_mean .+ (TASZscorePredicted_Dakota .* TAS_std)
 fuelConsumption_predicted = fuelConsumption_mean .+ (FuelConsumptionZscorePredicted_Dakota .* fuelConsumption_std)
-println(first(fuelConsumption_predicted, 5))
+
+#constructs observed output variable vectors
+power_Dakota_observed = dakotaEngineData[: , 5]
+airspeed_Dakota_observed = dakotaEngineData[: , 6]
+fuelConsumption_Dakota_observed = dakotaEngineData[: , 7]
+
+#Computes error of the surrogate model over all combinations of input variables
+power_error = zeros(length(power_Dakota_observed)); airspeed_error = zeros(length(airspeed_Dakota_observed)); fuelConsumption_error = zeros(length(fuelConsumption_Dakota_observed));
+
+for i in 1:length(power_Dakota_observed)
+    power_error[i] = abs((power_predicted[i] - power_Dakota_observed[i]) /  power_Dakota_observed[i])
+    airspeed_error[i] = abs((TAS_predicted[i] - airspeed_Dakota_observed[i]) /  airspeed_Dakota_observed[i])
+    fuelConsumption_error[i] = abs((fuelConsumption_predicted[i] - fuelConsumption_Dakota_observed[i]) /  fuelConsumption_Dakota_observed[i])
+end
 
 
 #=
-
-"""
-Computes error of the surrogate model over all combinations of input variables
-"""
-
-
-y1_error = zeros(length(y1)); y2_error = zeros(length(y2)); y3_error = zeros(length(y3));
-
-for i in 1:length(y1)
-   
-    y1_predicted = multilinear_basis(x1[i], x2[i], x3[i], x4[i]) * Θ1
-    y2_predicted = multilinear_basis(x1[i], x2[i], x3[i], x4[i]) * Θ2
-    y3_predicted = multilinear_basis(x1[i], x2[i], x3[i], x4[i]) * Θ3
-
-
-    y1_error[i] = abs((y1_predicted[1] - y1[i]) /  y1[i])
-    y2_error[i] = abs((y2_predicted[1] - y2[i]) /  y2[i])
-    y3_error[i] = abs((y3_predicted[1] - y3[i]) /  y3[i])
-end
-
-println(y3_error)
-
+println("Power Error = ", power_error)
+println()
+println("Airspeed Error = ", airspeed_error)
+println()
+println("Fuel Consumption Error = ", fuelConsumption_error)
+println()
 =#
