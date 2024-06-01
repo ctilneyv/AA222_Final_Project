@@ -2,8 +2,8 @@
 
 ## Code overview
 ## /main
-- `SurrogateModel.jl` is a Julia file that computes the weighting parameters for a surrogate model defineid by the 16 multilinear basis functions
-- `ModelValidation.jl` is a Julia file that computes the weighting parameters for a surrogate model defineid by the 16 multilinear basis functions
+- `SurrogateModel.jl` is a Julia file that computes the weighting parameters for a surrogate model defined by the 16 multilinear basis functions
+- `ModelValidation.jl` is a Julia file that computes the error of our 182-calculated surrogate model with the preformance of the similar Piper Dakota
 - `Optimize.jl` is a Julia file that performs all the optimization provided the surrogate model is computed
 
 
