@@ -1,9 +1,8 @@
-import pandas as pd
-import matplotlib.pyplot as plt
-from matplotlib import rc
-import numpy as np
-from mpl_toolkits.mplot3d import Axes3D
-from scipy.spatial import cKDTree
+import pandas as pd                     # type: ignore
+import matplotlib.pyplot as plt         # type: ignore
+import numpy as np                      # type: ignore
+from mpl_toolkits.mplot3d import Axes3D # type: ignore
+from scipy.spatial import cKDTree       # type: ignore
 
 # Load data
 results_df = pd.read_csv("computation/results.csv")
