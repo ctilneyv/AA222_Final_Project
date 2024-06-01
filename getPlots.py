@@ -4,28 +4,23 @@ import numpy as np
 from scipy.spatial import cKDTree
 import plotly.graph_objects as go
 
-# Load data
 results_df = pd.read_csv("computation/results.csv")
 optima = pd.read_csv("computation/pareto_optima.csv")
 optimum = pd.read_csv("computation/pareto_optimum.csv")
 
-# non-Pareto/Pareto optimal points
 non_pareto_pts = results_df[['optimal_power', 'optimal_airspeed', 'optimal_fc']].values
 pareto_pts = optima[['optimal_power', 'optimal_airspeed', 'optimal_fc']].values
 
 tree = cKDTree(pareto_pts)
 distances, _ = tree.query(non_pareto_pts, k=1)
 
-# Color gradient from light red to light pink based on distances
 min_distance = min(distances)
 max_distance = max(distances)
 color_grad = np.linspace(1, 0.05, len(distances))
 colors = plt.cm.Reds(color_grad)
 
-# Create Plotly 3D scatter plot
 fig = go.Figure()
 
-# Non-Pareto points
 fig.add_trace(go.Scatter3d(
     x=results_df['optimal_power'],
     y=results_df['optimal_airspeed'],
@@ -40,7 +35,6 @@ fig.add_trace(go.Scatter3d(
     name='Non-Pareto'
 ))
 
-# Pareto optimal points
 fig.add_trace(go.Scatter3d(
     x=optima['optimal_power'],
     y=optima['optimal_airspeed'],
@@ -53,7 +47,6 @@ fig.add_trace(go.Scatter3d(
     name='Pareto Optimal'
 ))
 
-# Optionally add the optimum point
 fig.add_trace(go.Scatter3d(
     x=optimum['optimal_power'],
     y=optimum['optimal_airspeed'],
@@ -66,7 +59,6 @@ fig.add_trace(go.Scatter3d(
     name=r"$\vec{\mathbf{w}} = (0.0,0.0,1.0)$"
 ))
 
-# Set labels
 fig.update_layout(
     scene=dict(
         xaxis_title='Power (%BHP)',
@@ -80,17 +72,13 @@ fig.update_layout(
     margin=dict(l=0, r=0, b=0, t=0)
 )
 
-# Adjust the camera view
 fig.update_layout(
     scene_camera=dict(
         eye=dict(x=2.0, y=2.0, z=0.5)
     )
 )
 
-# Save the figure
-fig.write_html("interactive_3d_plot.html")
-
-# To display the plot in an interactive window
+fig.write_html("InteractivePareto.html")
 fig.show()
 
 """import pandas as pd                     # type: ignore
