@@ -3,7 +3,6 @@ using Downloads
 using DataFrames
 using LinearAlgebra
 
-
 """
     multilinear_basis(x1, x2, x3, x4)
     Defines a function that returns the 16 multilinear basis function of 4 input variables

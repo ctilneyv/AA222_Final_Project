@@ -81,7 +81,7 @@ w_fc = 0.4
 results = []
 
 # discretization
-steps = [8, 8, 8, 8]
+steps = [5, 5, 5, 5]
 for i in 0:steps[1]
     for j in 0:steps[2]
         for k in 0:steps[3]
@@ -204,7 +204,7 @@ function extrapolate_aero(file_path::String, target_altitude::Float64, target_ai
     return result
 end
 
-file_path = "O-470-U_Aerodynamic_Data_Processed.csv"
+file_path = "data/O-470-U_Aerodynamic_Data_Processed.csv"
 aero_df = extrapolate_aero(file_path, optimum.pressure_altitude, optimum.optimal_airspeed)
 
 println("Extrapolated Aerodynamic Data:")

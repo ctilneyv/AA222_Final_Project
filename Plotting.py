@@ -28,7 +28,7 @@ fig.add_trace(go.Scatter3d(
     z=results_df['optimal_fc'],
     mode='markers',
     marker=dict(
-        size=3,
+        size=4,
         color=distances,
         colorscale='Reds',
         colorbar=dict(title='Distance'),
@@ -42,7 +42,7 @@ fig.add_trace(go.Scatter3d(
     z=optima['optimal_fc'],
     mode='markers',
     marker=dict(
-        size=3,
+        size=4,
         color='gold'
     ),
     name='Pareto Optimal'
@@ -80,8 +80,8 @@ fig.update_layout(
 )
 
 # fig.write_html("InteractivePareto.html")
-# fig.show()
-fig.show(renderer='plotlyshare')
+fig.show()
+# fig.show(renderer='plotlyshare')
 
 """import pandas as pd                     # type: ignore
 import matplotlib.pyplot as plt         # type: ignore
