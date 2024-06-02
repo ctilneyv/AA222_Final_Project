@@ -28,7 +28,7 @@ fig.add_trace(go.Scatter3d(
     z=results_df['optimal_fc'],
     mode='markers',
     marker=dict(
-        size=5,
+        size=3,
         color=distances,
         colorscale='Reds',
         colorbar=dict(title='Distance'),
@@ -42,7 +42,7 @@ fig.add_trace(go.Scatter3d(
     z=optima['optimal_fc'],
     mode='markers',
     marker=dict(
-        size=5,
+        size=3,
         color='gold'
     ),
     name='Pareto Optimal'
@@ -54,10 +54,10 @@ fig.add_trace(go.Scatter3d(
     z=optimum['optimal_fc'],
     mode='markers',
     marker=dict(
-        size=8,
+        size=5,
         color='blue'
     ),
-    name=r"$\vec{\mathbf{w}} = (0.0,0.0,1.0)$"
+    name=r"$\vec{\mathbf{w}} = (0.2,0.2,0.6)$"
 ))
 
 fig.update_layout(
@@ -79,9 +79,8 @@ fig.update_layout(
     )
 )
 
-# Save the plot as an HTML file
-fig.write_html("InteractivePareto.html")
-
+# fig.write_html("InteractivePareto.html")
+# fig.show()
 fig.show(renderer='plotlyshare')
 
 """import pandas as pd                     # type: ignore

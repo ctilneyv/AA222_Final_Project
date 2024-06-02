@@ -70,7 +70,7 @@ function constraint_penalty(x)
 end
 
 # base lower and upper bounds for design variables
-lb_base = [0.0, -9.0, 2100.0, 15.0]
+lb_base = [0.0, -10.0, 2100.0, 15.0]
 ub_base = [16500.0, 32.0, 2400.0, 23.0]
 
 # set the weights
@@ -81,7 +81,7 @@ w_fc = 0.4
 results = []
 
 # discretization
-steps = [7, 5, 5, 5]
+steps = [8, 8, 8, 8]
 for i in 0:steps[1]
     for j in 0:steps[2]
         for k in 0:steps[3]
@@ -168,9 +168,9 @@ function pareto_optimum(pareto_df, w_airspeed, w_power, w_fc)
     return optimum
 end
 
-w_power = 0.0
-w_airspeed = 0.0
-w_fc = 1.0
+w_power = (1-0.91)/2
+w_airspeed = (1-0.91)/2
+w_fc = 0.91
 
 optimum = pareto_optimum(pareto_df, w_airspeed, w_power, w_fc)
 
@@ -191,3 +191,21 @@ println("Outputs:")
 println("  Optimal Power (%BHP)             $(optimum.optimal_power)")
 println("  Optimal Airspeed (kts)           $(optimum.optimal_airspeed)")
 println("  Optimal Fuel Cons. (gal/hr)      $(optimum.optimal_fc)")
+
+function extrapolate_aero(file_path::String, target_altitude::Float64, target_airspeed::Float64)
+
+    data = CSV.read(file_path, DataFrame)
+    closest_altitude = data.Altitude[argmin(abs.(data.Altitude .- target_altitude))]
+
+    data_altitude_filtered = filter(row -> row.Altitude == closest_altitude, data)
+    closest_airspeed = data_altitude_filtered."Airspeed V(mph)"[argmin(abs.(data_altitude_filtered."Airspeed V(mph)" .- target_airspeed))]
+
+    result = filter(row -> row.Altitude == closest_altitude && row."Airspeed V(mph)" == closest_airspeed, data)
+    return result
+end
+
+file_path = "O-470-U_Aerodynamic_Data_Processed.csv"
+aero_df = extrapolate_aero(file_path, optimum.pressure_altitude, optimum.optimal_airspeed)
+
+println("Extrapolated Aerodynamic Data:")
+println(aero_df)
