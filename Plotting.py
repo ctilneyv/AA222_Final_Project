@@ -1,9 +1,9 @@
-import pandas as pd
-import matplotlib.pyplot as plt
-import numpy as np
-from scipy.spatial import cKDTree
-import plotly.graph_objects as go
-import plotlyshare
+import pandas as pd                 # type: ignore
+import matplotlib.pyplot as plt     # type: ignore
+import numpy as np                  # type: ignore
+from scipy.spatial import cKDTree   # type: ignore
+import plotly.graph_objects as go   # type: ignore
+import plotlyshare                  # type: ignore
 
 results_df = pd.read_csv("computation/results.csv")
 optima = pd.read_csv("computation/pareto_optima.csv")
