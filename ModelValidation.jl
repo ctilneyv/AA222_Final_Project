@@ -38,7 +38,7 @@ Computes error of the surrogate model over all combinations of input variables
 """
 
 # Download the Processed Dakota CSV
-csv_file_path = Downloads.download("https://raw.githubusercontent.com/ctilneyv/AA222_Final_Project/main/Engine%20Data/O-540_processed.csv")
+csv_file_path = Downloads.download("https://raw.githubusercontent.com/ctilneyv/AA222_Final_Project/main/data/O-540_processed.csv")
 
 # Read the CSV file into a DataFrame
 dakotaEngineData = CSV.read(csv_file_path, DataFrame; delim=',', missingstring="")
